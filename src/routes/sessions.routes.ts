@@ -1,6 +1,7 @@
 import { Request, Response, Router } from 'express';
 
 import AuthenticationService from '../services/authentication';
+import ensureAuthenticate from '../middlewares/ensureAuthenticated';
 
 const sessionsRouter = Router();
 
@@ -8,42 +9,45 @@ const sessionsRouter = Router();
  * Login
  */
 sessionsRouter.post('/', async (request: Request, response: Response) => {
-  try {
-    const { username, password } = request.body;
+  const { username, password } = request.body;
 
-    const AuthService = new AuthenticationService();
+  const AuthService = new AuthenticationService();
 
-    await AuthService.execute({
-      username,
-      password,
-    });
+  const { user, jwt } = await AuthService.execute({
+    username,
+    password,
+  });
 
-    return response.json({ ok: true });
-  } catch (error) {
-    return response
-      .status(401)
-      .json({ status: 'error', message: 'authentication fail' });
-  }
-
-  return response.json(data);
+  return response.json({
+    username: user.username,
+    jwt,
+  });
 });
 
 /**
  * Update Password
  */
-sessionsRouter.put('/password', (request: Request, response: Response) => {
-  const data = request.body;
+sessionsRouter.put(
+  '/password',
+  ensureAuthenticate,
+  (request: Request, response: Response) => {
+    const data = request.body;
 
-  return response.json(data);
-});
+    return response.json(data);
+  },
+);
 
 /**
  * Update Token
  */
-sessionsRouter.put('/', (request: Request, response: Response) => {
-  const data = request.body;
+sessionsRouter.put(
+  '/',
+  ensureAuthenticate,
+  (request: Request, response: Response) => {
+    const data = request.body;
 
-  return response.json(data);
-});
+    return response.json(data);
+  },
+);
 
 export default sessionsRouter;

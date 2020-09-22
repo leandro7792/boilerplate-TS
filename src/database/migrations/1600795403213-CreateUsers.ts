@@ -8,19 +8,29 @@ export default class CreateUsers1600795403213 implements MigrationInterface {
         columns: [
           {
             name: 'id',
-            type: 'int',
+            type: 'integer',
             isPrimary: true,
+            isGenerated: true,
             generationStrategy: 'increment',
           },
           {
             name: 'username',
             type: 'varchar',
-            isNullable: false,
           },
           {
             name: 'password',
             type: 'varchar',
-            isNullable: false,
+            isUnique: true,
+          },
+          {
+            name: 'created_at',
+            type: 'timestamp',
+            default: 'now()',
+          },
+          {
+            name: 'updated_at',
+            type: 'timestamp',
+            default: 'now()',
           },
         ],
       }),
