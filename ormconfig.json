@@ -2,12 +2,12 @@
   "type": "sqlite",
   "database": "./database.sqlite",
   "migrations": [
-    "./src/database/migrations/*.ts"
+    "dist/database/migrations/*.ts"
   ],
   "cli": {
-    "migrationsDir": "./src/database/migrations"
+    "migrationsDir": "dist/database/migrations"
   },
   "entities": [
-    "./src/models/**/*.ts"
+    "dist/models/**/*.ts"
   ]
 }

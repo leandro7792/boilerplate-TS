@@ -11,10 +11,10 @@ class User {
   @PrimaryGeneratedColumn('increment')
   id: number;
 
-  @Column()
+  @Column('text', { nullable: true })
   username: string;
 
-  @Column()
+  @Column('text', { nullable: true })
   password: string;
 
   @CreateDateColumn()

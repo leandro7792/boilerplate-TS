@@ -3,10 +3,11 @@ import 'reflect-metadata';
 
 import express, { Request, Response, NextFunction } from 'express';
 import 'express-async-errors';
+import { ValidationError } from 'yup';
 
-import routes from './routes';
-import logger from './services/logger';
 import AppError from './errors/AppErrors';
+import logger from './services/logger';
+import routes from './routes';
 
 import './database';
 
@@ -23,7 +24,14 @@ app.use((err: Error, request: Request, response: Response, _: NextFunction) => {
     });
   }
 
-  logger.error(err);
+  if (err instanceof ValidationError) {
+    return response.status(422).json({
+      status: 'error',
+      message: err.message,
+    });
+  }
+
+  console.log(err);
 
   return response.status(500).json({
     status: 'error',

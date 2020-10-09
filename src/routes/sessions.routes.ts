@@ -1,6 +1,9 @@
 import { Request, Response, Router } from 'express';
+import * as yup from 'yup';
 
 import AuthenticationService from '../services/authentication';
+import RefreshToken from '../services/refreshToken';
+import ChangePassword from '../services/changePassword';
 import ensureAuthenticate from '../middlewares/ensureAuthenticated';
 
 const sessionsRouter = Router();
@@ -9,7 +12,14 @@ const sessionsRouter = Router();
  * Login
  */
 sessionsRouter.post('/', async (request: Request, response: Response) => {
-  const { username, password } = request.body;
+  const loginSchema = yup
+    .object({
+      username: yup.string().defined(),
+      password: yup.string().defined(),
+    })
+    .defined();
+
+  const { username, password } = await loginSchema.validate(request.body);
 
   const AuthService = new AuthenticationService();
 
@@ -30,10 +40,34 @@ sessionsRouter.post('/', async (request: Request, response: Response) => {
 sessionsRouter.put(
   '/password',
   ensureAuthenticate,
-  (request: Request, response: Response) => {
-    const data = request.body;
+  async (request: Request, response: Response) => {
+    const schema = yup
+      .object({
+        oldPassword: yup.string().defined(),
+        newPassword: yup.string().defined(),
+        confirmPassword: yup
+          .string()
+          .oneOf([yup.ref('newPassword')], "confirmPassword don't match")
+          .defined(),
+      })
+      .defined();
 
-    return response.json(data);
+    const { oldPassword, newPassword } = await schema.validate(request.body);
+
+    const { id } = request.user;
+
+    const changePass = new ChangePassword();
+
+    const { username } = await changePass.execute({
+      id,
+      oldPassword,
+      newPassword,
+    });
+
+    return response.json({
+      username,
+      newPassword,
+    });
   },
 );
 
@@ -43,10 +77,14 @@ sessionsRouter.put(
 sessionsRouter.put(
   '/',
   ensureAuthenticate,
-  (request: Request, response: Response) => {
-    const data = request.body;
+  async (request: Request, response: Response) => {
+    const { id } = request.user;
 
-    return response.json(data);
+    const refresh = new RefreshToken();
+
+    const { jwt } = await refresh.execute({ id });
+
+    return response.json({ jwt });
   },
 );
 
